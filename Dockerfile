@@ -1,22 +1,26 @@
-FROM openjdk:8u102-jdk
-MAINTAINER David Asabina <vid@bina.me>
-ARG SBT_VERSION="0.13.12"
-ARG SCALA_VERSION="2.11.8"
-# Use fingerprints in the future to verify authenticity of payloads.
-RUN \
-  wget https://downloads.lightbend.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.deb -O \
-    /tmp/scala-${SCALA_VERSION}.deb && \
-  dpkg -i /tmp/scala-${SCALA_VERSION}.deb && \
-  apt-get update && \
-  apt-get install -f && \
-  echo "export SCALA_VERSION=${SCALA_VERSION}" >> /root/.bashrc
-COPY sbt.bash /usr/local/bin/sbt
-RUN \
-  wget -O /tmp/sbt-${SBT_VERSION}.zip \
-  https://dl.bintray.com/sbt/native-packages/sbt/${SBT_VERSION}/sbt-${SBT_VERSION}.zip && \
-  unzip /tmp/sbt-${SBT_VERSION}.zip  -d /tmp/sbt-${SBT_VERSION} && \
-  echo "export SBT_VERSION=${SBT_VERSION}" >> /root/.bashrc && \
-  chmod +x /usr/local/bin/sbt && \
-  sbt 
+FROM frolvlad/alpine-oraclejdk8:slim
+
+ARG SBT_VERSION="0.13.15"
+ARG SCALA_VERSION="2.12.2"
+ARG SCALA_HOME=/usr/share/scala
+
+RUN apk add --no-cache --virtual=.build-dependencies wget curl ca-certificates && \
+    apk add --no-cache bash && \
+    cd "/tmp" && \
+    wget "https://downloads.typesafe.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.tgz" && \
+    tar xzf "scala-${SCALA_VERSION}.tgz" && \
+    mkdir "${SCALA_HOME}" && \
+    rm "/tmp/scala-${SCALA_VERSION}/bin/"*.bat && \
+    mv "/tmp/scala-${SCALA_VERSION}/bin" "/tmp/scala-${SCALA_VERSION}/lib" "${SCALA_HOME}" && \
+    ln -s "${SCALA_HOME}/bin/"* "/usr/bin/" && \
+    apk del .build-dependencies && \
+    rm -rf "/tmp/"*
+RUN apk add --no-cache --virtual=build-dependencies curl && \
+    curl -sL "http://dl.bintray.com/sbt/native-packages/sbt/$SBT_VERSION/sbt-$SBT_VERSION.tgz" | gunzip | tar -x -C /usr/local && \
+    ln -s /usr/local/sbt/bin/sbt /usr/local/bin/sbt && \
+    chmod 0755 /usr/local/bin/sbt && \
+    apk del build-dependencies && \
+    sbt
+RUN apk add --update-cache --no-cache git neovim
 WORKDIR /src
 CMD /bin/bash -lc /usr/local/bin/sbt
