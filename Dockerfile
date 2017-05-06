@@ -22,7 +22,7 @@ RUN apk add --no-cache --virtual=build-dependencies curl && \
     apk del build-dependencies && \
     sbt
 RUN apk add --no-cache --virtual=build-dependencies curl musl-dev gcc python3-dev python2-dev && \
-    apk add --no-cache git neovim python3 python2 && \
+    apk add --no-cache git neovim python3 python2 websocket-client sexpdata && \
     python2 -m ensurepip && \
     pip2 install --upgrade pip setuptools neovim && \
     python3 -m ensurepip && \
