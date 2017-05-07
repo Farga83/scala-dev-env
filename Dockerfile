@@ -30,6 +30,7 @@ RUN apk add --no-cache --virtual=build-dependencies curl musl-dev gcc python3-de
     mkdir -p ~/.config/nvim/autoload && \
     git clone https://github.com/Farga83/dotfiles.git dotfiles && \
     ln -s /dotfiles/init.vim ~/.config/nvim/init.vim && \
+    ln -s /dotfiles/.bash_profile ~/.bash_profile && \
     curl -fLo ~/.config/nvim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
     apk del build-dependencies
 WORKDIR /src
